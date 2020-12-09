@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+import tema5
+
+
+"""funktion 1"""
+
+
+def calculate_squares_in_row(frame_width, sqr_size, padding):
+    """Returnerar hur många rutor som får plats per rad.
+
+    squares_in_row är analet squares som får plats per rad beroende
+    på deras storlek och fönstrets storlek
+    frame_with är fönstrets bredd
+    padding är storleken på mellanrummen mellan kvadraterna
+    sqr_size är kvadraternas storlek
+    """
+    squares_in_row = frame_width // (sqr_size + padding*2)
+    return squares_in_row
+
+
+"""funktion 2"""
+
+
+def get_squares_in_row_get_remaining_squares(num_sqrs_in_row, sqrs_left):
+    """Returnerar de återstånde kvadraterna samt kvadraterna i raden.
+
+    sqrs_left är antal kvadrater som finns i listan squares.
+    cur_row_sqrs är kvadraterna i den nuvarande raden.
+    num_sqrs_in_row är antalet kvadrater i raden
+    """
+    if len(sqrs_left) >= num_sqrs_in_row:
+        cur_row_sqrs = sqrs_left[:num_sqrs_in_row]
+        sqrs_left = sqrs_left[num_sqrs_in_row:]
+    else:
+        cur_row_sqrs = sqrs_left
+        sqrs_left = []
+
+    return cur_row_sqrs, sqrs_left
+
+
+"""funktion 3 & 5"""
+
+
+def place_row(cur_row_sqrs, ypos, sqr_size, padding):
+    """Placerar ut en rad.
+
+    cur_row_sqrs är listan med kvadrater som placeras ut.
+    ypos är y-positionen där kvadraterna ska placeras.
+    sqr_size är storleken av rutorna.
+    """
+    xpos = 0
+    # placerar raden
+    for sqr in cur_row_sqrs:
+        # lägg till padding, placera kvadrat och flytta fram xpos till
+        # nästa "ruta"
+        xpos += padding
+        sqr.place(x=xpos, y=ypos)
+        xpos += sqr_size + padding
+
+
+"""funktion 6"""
+
+
+def get_updated_bottom_row_ypos(bottom_row_ypos, padding, sqr_size):
+    """Returnerar en uppflyttad bottenrad."""
+    return bottom_row_ypos - (padding*2 + sqr_size)
+
+
+"""funktion 7"""
+
+
+def do_rows_cross(top_row_ypos, bottom_row_ypos):
+    """Tittar om raderna korsar varandra och returnerar True om det stämmer.
+
+    top_row_ypos är den övre radens position på y-axeln
+    bottom_row_ypos är den undre radens position på y-axeln
+    """
+    if top_row_ypos > bottom_row_ypos or bottom_row_ypos < top_row_ypos:
+        return True
+    return False
+
+
+def flipflop_layout(squares, frame_height, frame_width, start_left, start_top):
+    """Placera ut kvadraterna i listan först uppe, sen nere."""
+    sqr_size = squares[0].winfo_width()
+
+    # Vi tänker oss att varje kvadrat har padding med utrymme runt om
+    # Vi får då en ruta med en kvadrat i
+    padding = 10
+
+    # Variabler för att hålla koll på y-positionen för övre och undre raden,
+    # samt om nästa rad ska placeras ut uppe eller nere.
+    top_row_ypos = 0
+    bottom_row_ypos = frame_height - padding*2 - sqr_size
+    placing_top_row = True
+
+    # från början finns alla kvadrater kvar att placera ut
+    sqrs_left = squares
+
+    # placera ut rader av kvadrater så länge det finns kvadrater kvar
+    while sqrs_left:
+        # räkna ut hur många kvadrater får plats på raden
+        # UTBRYT 1!
+        num_sqrs_in_row = calculate_squares_in_row(frame_width,
+                                                   sqr_size, padding)
+
+        # ta fram kvadraterna för nuvarande rad och uppdatera hur många
+        # som finns kvar
+        # UTBRYT 2!
+        cur_row_sqrs, sqrs_left = get_squares_in_row_get_remaining_squares(
+            num_sqrs_in_row, sqrs_left)
+
+        # placera ut alla kvadrater i överrad
+        if placing_top_row:
+            ypos = top_row_ypos + padding
+            # placera raden
+            # UTBRYT 3!
+            place_row(cur_row_sqrs, ypos, sqr_size, padding)
+
+            # flytta ner överraden
+            top_row_ypos += padding*2 + sqr_size
+
+        # placera ut underrad
+        else:
+            ypos = bottom_row_ypos + padding
+            # placera raden
+            # UTBRYT 5!
+            place_row(cur_row_sqrs, ypos, sqr_size, padding)
+
+            # flytta upp bottenraden
+            # UTBRYT 6!
+            bottom_row_ypos = get_updated_bottom_row_ypos(bottom_row_ypos,
+                                                          padding, sqr_size)
+
+        # top_row_ypos och bottom_row_ypos korsar varandra får vi inte plats
+        # med flera rader
+        # UTBRYT 7!
+        if do_rows_cross(top_row_ypos, bottom_row_ypos):
+            break
+
+        # flippa positionen för nästa rad
+        placing_top_row = not placing_top_row
+
+
+if __name__ == "__main__":
+    layout_tester = tema5.LayoutTester(flipflop_layout)
